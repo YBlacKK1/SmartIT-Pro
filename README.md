@@ -1,31 +1,185 @@
-# SmartIT Pro
+# 🚀 SmartIT Pro
 
-Enterprise ASP.NET Core 8 IT asset management and service desk solution using Clean Architecture.
+SmartIT Pro, **ASP.NET Core 8** ve **Clean Architecture** mimarisi kullanılarak geliştirilen kurumsal bir **Bilgi Teknolojileri (IT) Yönetim Sistemi** projesidir.
 
-## Projects
+Bu proje; kurumlarda personel, departman ve destek taleplerinin tek bir platform üzerinden güvenli, düzenli ve sürdürülebilir şekilde yönetilmesini amaçlamaktadır.
 
-| Project | Purpose |
-| --- | --- |
-| SmartIT.Domain | Business entities and enums |
-| SmartIT.Application | DTOs, contracts, AutoMapper, FluentValidation |
-| SmartIT.Infrastructure | EF Core SQL Server, Identity, repository, data seed |
-| SmartIT.Web | Bootstrap MVC admin panel, reports, QR, SignalR |
-| SmartIT.API | Swagger-enabled REST API |
-| SmartIT.Tests | Unit tests |
+---
 
-## Run
+# 📌 Projenin Amacı
 
-Install .NET 8 SDK and SQL Server/LocalDB, configure `DefaultConnection` in both hosts, then run:
+SmartIT Pro, kurumsal bilgi teknolojileri süreçlerini dijital ortama taşıyarak yönetimi kolaylaştırmayı hedefleyen modern bir web uygulamasıdır.
 
-```powershell
+Katmanlı mimarisi sayesinde proje;
+
+- Daha sürdürülebilir
+- Daha güvenli
+- Daha performanslı
+- Daha kolay geliştirilebilir
+
+bir yapıya sahiptir.
+
+---
+
+# ✨ Özellikler
+
+- 👤 Kullanıcı Giriş Sistemi
+- 🔐 Rol Bazlı Yetkilendirme
+- 👨‍💼 Personel Yönetimi
+- 🏢 Departman Yönetimi
+- 🎫 Destek Talebi (Ticket) Yönetimi
+- 📊 Yönetim Paneli
+- 📈 Raporlama
+- 📱 Responsive Tasarım
+- ⚡ Performans Odaklı Mimari
+
+---
+
+# 🏗️ Proje Mimarisi
+
+Proje **Clean Architecture** prensiplerine uygun olarak geliştirilmiştir.
+
+```text
+📁 SmartIT.Domain
+│
+├── Entity Sınıfları
+├── Arayüzler
+└── Temel Yapılar
+
+📁 SmartIT.Application
+│
+├── İş Kuralları
+├── DTO'lar
+├── Servisler
+└── Validasyonlar
+
+📁 SmartIT.Infrastructure
+│
+├── Veritabanı İşlemleri
+├── Repository Yapısı
+├── Identity
+└── Servisler
+
+📁 SmartIT.API
+│
+├── API Controller'ları
+└── Endpoint'ler
+
+📁 SmartIT.Web
+│
+├── MVC
+├── View
+├── ViewModel
+└── wwwroot
+
+📁 SmartIT.Tests
+```
+
+---
+
+# 💻 Kullanılan Teknolojiler
+
+- ASP.NET Core 8
+- ASP.NET Core MVC
+- C#
+- Entity Framework Core
+- SQL Server
+- HTML5
+- CSS3
+- JavaScript
+- Bootstrap 5
+- LINQ
+- Clean Architecture
+- Dependency Injection
+- Repository Pattern
+
+---
+
+# 📂 Proje Yapısı
+
+```text
+📁 SmartIT.API
+📁 SmartIT.Application
+📁 SmartIT.Domain
+📁 SmartIT.Infrastructure
+📁 SmartIT.Tests
+📁 SmartIT.Web
+```
+
+---
+
+# ⚙️ Kurulum
+
+Projeyi bilgisayarınıza klonlayın.
+
+```bash
+git clone https://github.com/YBlackK1/SmartIT-Pro.git
+```
+
+Proje klasörüne geçin.
+
+```bash
+cd SmartIT-Pro
+```
+
+Gerekli paketleri yükleyin.
+
+```bash
 dotnet restore
-dotnet build SmartIT.sln
-dotnet test SmartIT.Tests
+```
+
+Uygulamayı çalıştırın.
+
+```bash
 dotnet run --project SmartIT.Web
 ```
 
-The first run creates schema through EF Core and seeds `Admin`/`User` roles and an administrator: `admin@smartit.local` / `Admin123!`. Change that password immediately. Run the API project and browse to `/swagger` for the REST contract.
+---
 
-Included modules: dashboard, employee profiles/photos/departments, asset inventory, assignment history domain model, ticket/comments/attachments domain model, licenses, maintenance, audit logs, reports (CSV/XLSX/PDF), QR labels, Identity roles, SignalR notifications, dark mode, Serilog, validation, tests, and sample data.
+# 📸 Ekran Görüntüleri
 
-Use [INSTALLATION.md](INSTALLATION.md) for detailed database deployment notes.
+> Yakında eklenecektir.
+
+---
+
+# 🚀 Gelecekte Eklenecek Özellikler
+
+- 📧 Mail Bildirim Sistemi
+- 📎 Dosya Yükleme
+- 🌙 Karanlık Tema
+- 🌍 Çoklu Dil Desteği
+- 📑 Gelişmiş Raporlama
+- 🐳 Docker Desteği
+- ☁️ Azure Yayını
+
+---
+
+# 👨‍💻 Geliştirici
+
+**Yusuf Gürgen**
+
+🎓 Nişantaşı Üniversitesi  
+İnternet ve Ağ Teknolojileri
+
+🎯 Hedef Pozisyonlar
+
+- IT Support Specialist
+- System Support Specialist
+- Network Support Specialist
+- Junior .NET Developer
+
+---
+
+# 📬 İletişim
+
+**GitHub**
+
+https://github.com/YBlackK1
+
+**LinkedIn**
+
+www.linkedin.com/in/yusuf-gürgen-700061227
+
+---
+
+⭐ Projeyi beğendiyseniz destek olmak için yıldız vermeyi unutmayın.
