@@ -1,129 +1,97 @@
 # 🚀 SmartIT Pro
 
-SmartIT Pro, **ASP.NET Core 8** ve **Clean Architecture** mimarisi kullanılarak geliştirilen kurumsal bir **Bilgi Teknolojileri (IT) Yönetim Sistemi** projesidir.
+SmartIT Pro, kurumların bilgi teknolojileri süreçlerini tek bir platform üzerinden yönetebilmesi amacıyla geliştirilmiş modern bir **ASP.NET Core 8 MVC** uygulamasıdır.
 
-Bu proje; kurumlarda personel, departman ve destek taleplerinin tek bir platform üzerinden güvenli, düzenli ve sürdürülebilir şekilde yönetilmesini amaçlamaktadır.
+Proje; kullanıcı, personel, departman ve destek taleplerinin güvenli, hızlı ve düzenli bir şekilde yönetilmesini sağlayan ölçeklenebilir bir yönetim sistemidir.
 
 ---
 
 ## 🌐 Canlı Demo
 
-Uygulamayı canlı olarak incelemek için aşağıdaki bağlantıyı kullanabilirsiniz.
-
 🔗 https://smartitpro-web-26-cbb6dudma8h3g2ak.westeurope-01.azurewebsites.net/
 
+---
 
-# 📌 Projenin Amacı
+## 📌 Proje Hakkında
 
-SmartIT Pro, kurumsal bilgi teknolojileri süreçlerini dijital ortama taşıyarak yönetimi kolaylaştırmayı hedefleyen modern bir web uygulamasıdır.
-
-Katmanlı mimarisi sayesinde proje;
-
-- Daha sürdürülebilir
-- Daha güvenli
-- Daha performanslı
-- Daha kolay geliştirilebilir
-
-bir yapıya sahiptir.
+SmartIT Pro, kurumsal IT operasyonlarını dijital ortama taşıyarak süreçlerin daha verimli yönetilmesini amaçlar. Modern yazılım geliştirme prensipleri kullanılarak geliştirilen proje; sürdürülebilir, güvenli ve kullanıcı dostu bir mimariye sahiptir.
 
 ---
 
-# ✨ Özellikler
+## ✨ Özellikler
 
-- 👤 Kullanıcı Giriş Sistemi
-- 🔐 Rol Bazlı Yetkilendirme
+- 👤 Kullanıcı Yönetimi
 - 👨‍💼 Personel Yönetimi
 - 🏢 Departman Yönetimi
-- 🎫 Destek Talebi (Ticket) Yönetimi
-- 📊 Yönetim Paneli
-- 📈 Raporlama
+- 🎫 Destek Talebi (Ticket) Sistemi
+- 📊 Yönetim Paneli (Dashboard)
+- 🔐 Giriş ve Yetkilendirme Sistemi
+- 📄 Raporlama Altyapısı
 - 📱 Responsive Tasarım
-- ⚡ Performans Odaklı Mimari
+- ⚡ Modern ve Kullanıcı Dostu Arayüz
 
 ---
 
-# 🏗️ Proje Mimarisi
-
-Proje **Clean Architecture** prensiplerine uygun olarak geliştirilmiştir.
-
-```text
-📁 SmartIT.Domain
-│
-├── Entity Sınıfları
-├── Arayüzler
-└── Temel Yapılar
-
-📁 SmartIT.Application
-│
-├── İş Kuralları
-├── DTO'lar
-├── Servisler
-└── Validasyonlar
-
-📁 SmartIT.Infrastructure
-│
-├── Veritabanı İşlemleri
-├── Repository Yapısı
-├── Identity
-└── Servisler
-
-📁 SmartIT.API
-│
-├── API Controller'ları
-└── Endpoint'ler
-
-📁 SmartIT.Web
-│
-├── MVC
-├── View
-├── ViewModel
-└── wwwroot
-
-📁 SmartIT.Tests
-```
-
----
-
-# 💻 Kullanılan Teknolojiler
+## 🛠️ Kullanılan Teknolojiler
 
 - ASP.NET Core 8
-- ASP.NET Core MVC
 - C#
 - Entity Framework Core
 - SQL Server
+- Bootstrap 5
 - HTML5
 - CSS3
 - JavaScript
-- Bootstrap 5
-- LINQ
 - Clean Architecture
-- Dependency Injection
-- Repository Pattern
+- AutoMapper
+- FluentValidation
 
 ---
 
-# 📂 Proje Yapısı
+## 📂 Proje Yapısı
 
 ```text
-📁 SmartIT.API
-📁 SmartIT.Application
-📁 SmartIT.Domain
-📁 SmartIT.Infrastructure
-📁 SmartIT.Tests
-📁 SmartIT.Web
+SmartIT-Pro
+│
+├── SmartIT.Web
+├── SmartIT.Application
+├── SmartIT.Domain
+├── SmartIT.Infrastructure
+├── SmartIT.Persistence
+└── SmartIT.Tests
 ```
 
 ---
 
-# ⚙️ Kurulum
+## 📸 Ekran Görüntüleri
 
-Projeyi bilgisayarınıza klonlayın.
+### 🔐 Giriş Ekranı
+
+> Giriş ekranı görseli eklenecek.
+
+### 📊 Dashboard
+
+> Dashboard ekran görüntüsü eklenecek.
+
+### 👨‍💼 Personel Yönetimi
+
+> Personel yönetimi ekran görüntüsü eklenecek.
+
+### 🎫 Destek Talepleri
+
+> Destek talepleri ekran görüntüsü eklenecek.
+
+---
+
+## ⚙️ Kurulum
+
+Depoyu bilgisayarınıza klonlayın.
 
 ```bash
 git clone https://github.com/YBlackK1/SmartIT-Pro.git
 ```
 
-Proje klasörüne geçin.
+Proje klasörüne girin.
 
 ```bash
 cd SmartIT-Pro
@@ -135,58 +103,59 @@ Gerekli paketleri yükleyin.
 dotnet restore
 ```
 
-Uygulamayı çalıştırın.
+Veritabanını oluşturun.
 
 ```bash
-dotnet run --project SmartIT.Web
+dotnet ef database update
+```
+
+Projeyi çalıştırın.
+
+```bash
+dotnet run
 ```
 
 ---
 
-# 📸 Ekran Görüntüleri
+## 🎯 Yol Haritası
 
-> Yakında eklenecektir.
-
----
-
-# 🚀 Gelecekte Eklenecek Özellikler
-
-- 📧 Mail Bildirim Sistemi
-- 📎 Dosya Yükleme
-- 🌙 Karanlık Tema
-- 🌍 Çoklu Dil Desteği
-- 📑 Gelişmiş Raporlama
-- 🐳 Docker Desteği
-- ☁️ Azure Yayını
+- [x] Kullanıcı Yönetimi
+- [x] Personel Yönetimi
+- [x] Departman Yönetimi
+- [x] Destek Talebi Sistemi
+- [x] Dashboard
+- [ ] E-posta Bildirimleri
+- [ ] Docker Desteği
+- [ ] CI/CD Entegrasyonu
+- [ ] Birim Testleri
 
 ---
 
-# 👨‍💻 Geliştirici
+## 🤝 Katkıda Bulunma
+
+Projeye katkıda bulunmak isterseniz depoyu forklayabilir, geliştirmelerinizi tamamladıktan sonra Pull Request gönderebilirsiniz.
+
+---
+
+## 👨‍💻 Geliştirici
 
 **Yusuf Gürgen**
 
-🎓 Nişantaşı Üniversitesi  
-İnternet ve Ağ Teknolojileri
+🎓 İnternet ve Ağ Teknolojileri Öğrencisi
 
-🎯 Hedef Pozisyonlar
+### Bağlantılar
 
-- IT Support Specialist
-- System Support Specialist
-- Network Support Specialist
-- Junior .NET Developer
+🌐 **Canlı Demo**  
+https://smartitpro-web-26-cbb6dudma8h3g2ak.westeurope-01.azurewebsites.net/
 
----
-
-# 📬 İletişim
-
-**GitHub**
-
+💻 **GitHub**  
 https://github.com/YBlackK1
 
-**LinkedIn**
-
-www.linkedin.com/in/yusuf-gürgen-700061227
+💼 **LinkedIn**  
+https://www.linkedin.com/in/yusufgurgen/
 
 ---
 
-⭐ Projeyi beğendiyseniz destek olmak için yıldız vermeyi unutmayın.
+## ⭐ Destek
+
+Projeyi beğendiyseniz GitHub üzerinden ⭐ vererek destek olabilirsiniz.
