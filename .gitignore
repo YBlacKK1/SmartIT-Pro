@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+.vs/
+.idea/
+*.user
+*.suo
+logs/
+**/logs/
+**/wwwroot/uploads/
+appsettings.Local.json
+.env

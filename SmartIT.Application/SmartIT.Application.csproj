@@ -1,0 +1,1 @@
+<Project Sdk="Microsoft.NET.Sdk"><ItemGroup><ProjectReference Include="..\SmartIT.Domain\SmartIT.Domain.csproj" /></ItemGroup><ItemGroup><PackageReference Include="AutoMapper" /><PackageReference Include="MediatR" /><PackageReference Include="FluentValidation.AspNetCore" /></ItemGroup></Project>

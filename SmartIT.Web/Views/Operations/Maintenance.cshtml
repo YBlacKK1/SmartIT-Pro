@@ -1,0 +1,2 @@
+@model IEnumerable<MaintenanceSchedule>
+<h1 class="h3">Maintenance schedule</h1><div class="card"><table class="table mb-0"><thead><tr><th>Description</th><th>Scheduled</th><th>Completed</th></tr></thead><tbody>@foreach(var x in Model){<tr><td>@x.Description</td><td>@x.ScheduledFor.ToLocalTime()</td><td>@x.Completed</td></tr>}</tbody></table></div>

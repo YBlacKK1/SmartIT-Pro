@@ -1,0 +1,2 @@
+@model IEnumerable<SoftwareLicense>
+<h1 class="h3">Software licenses</h1><div class="card"><table class="table mb-0"><thead><tr><th>Product</th><th>Seats</th><th>Used</th><th>Expires</th></tr></thead><tbody>@foreach(var x in Model){<tr><td>@x.ProductName</td><td>@x.Seats</td><td>@x.UsedSeats</td><td>@x.ExpiresAt?.ToShortDateString()</td></tr>}</tbody></table></div>

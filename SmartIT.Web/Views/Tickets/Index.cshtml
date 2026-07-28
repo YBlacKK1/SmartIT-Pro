@@ -1,0 +1,2 @@
+@model IEnumerable<TicketDto>
+<div class="d-flex justify-content-between mb-3"><h1 class="h3">Help Desk</h1><a asp-action="Create" class="btn btn-primary">New ticket</a></div><div class="card"><table class="table table-hover mb-0"><thead><tr><th>Number</th><th>Subject</th><th>Priority</th><th>Status</th><th>Created</th></tr></thead><tbody>@foreach(var t in Model){<tr><td>@t.Number</td><td>@t.Subject</td><td>@t.Priority</td><td>@t.Status</td><td>@t.CreatedAt.ToLocalTime()</td></tr>}</tbody></table></div>

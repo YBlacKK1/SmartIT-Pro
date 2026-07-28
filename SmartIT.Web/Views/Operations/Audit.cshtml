@@ -1,0 +1,2 @@
+@model IEnumerable<AuditLog>
+<h1 class="h3">Audit log</h1><div class="card"><table class="table mb-0"><thead><tr><th>When</th><th>User</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead><tbody>@foreach(var x in Model){<tr><td>@x.CreatedAt.ToLocalTime()</td><td>@x.UserName</td><td>@x.Action</td><td>@x.EntityName</td><td>@x.Details</td></tr>}</tbody></table></div>
