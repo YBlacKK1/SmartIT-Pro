@@ -6,6 +6,13 @@ Bu proje; kurumlarda personel, departman ve destek taleplerinin tek bir platform
 
 ---
 
+## 🌐 Canlı Demo
+
+Uygulamayı canlı olarak incelemek için aşağıdaki bağlantıyı kullanabilirsiniz.
+
+🔗 https://smartitpro-web-26-cbb6dudma8h3g2ak.westeurope-01.azurewebsites.net/
+
+
 # 📌 Projenin Amacı
 
 SmartIT Pro, kurumsal bilgi teknolojileri süreçlerini dijital ortama taşıyarak yönetimi kolaylaştırmayı hedefleyen modern bir web uygulamasıdır.
