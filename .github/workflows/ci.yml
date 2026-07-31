@@ -22,10 +22,12 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore
-        run: dotnet restore SmartIT.sln
+        run: |
+          dotnet restore SmartIT.sln
+          dotnet restore SmartIT.Tests/SmartIT.Tests.csproj
 
       - name: Build
-        run: dotnet build SmartIT.sln --configuration Release --no-restore
+        run: dotnet build SmartIT.sln --configuration Release
 
       - name: Test
         run: dotnet test SmartIT.Tests/SmartIT.Tests.csproj --configuration Release --no-build
