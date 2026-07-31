@@ -1,3 +1,37 @@
+# Değişiklik Geçmişi
+
+## [v1.0.1] - 2026-07-31
+
+### Eklendi
+
+- Azure App Service canlı dağıtımı
+- GitHub Actions ile otomatik restore, build ve test süreci
+- Responsive yönetim paneli
+- Dark/light tema ve mobil menü
+- KPI kartları ve Chart.js grafikleri
+- SignalR gerçek zamanlı bildirim altyapısı
+- CSV, Excel ve PDF rapor merkezi
+- Varlıklar için QR kod desteği
+- Güvenli yerel yönetici kurulum sistemi
+
+### Geliştirildi
+
+- Çalışan, varlık, atama ve destek talebi iş akışları
+- Ticket detay ve durum yönetimi
+- Varlık atama ve iade işlemleri
+- Çalışan profil ve departman düzenleme işlemleri
+- Lisans, bakım ve audit log sayfaları
+- Cookie güvenliği, giriş kilitleme ve rol kontrolleri
+
+### Düzeltildi
+
+- GitHub Actions test projesi NuGet restore sorunu
+- Azure ZIP dağıtım ve Linux uyumluluk sorunları
+- Yönetici hesabının güvenli biçimde oluşturulması
+- Yerel ve Azure ortam yapılandırma farklılıkları
+
+
+
 # Changelog
 
 ## v1.0.1 — Azure ve GitHub Güncellemesi
