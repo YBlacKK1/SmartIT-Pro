@@ -1,2 +1,148 @@
 @model DashboardDto
-<div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="h3 mb-0">Operations Dashboard</h1><small class="text-body-secondary">Live IT estate overview</small></div><span class="badge text-bg-success">System healthy</span></div><div class="row g-3 mb-4"><div class="col-md-3"><div class="card stat"><div class="card-body"><small>Employees</small><h2>@Model.Employees</h2></div></div></div><div class="col-md-3"><div class="card stat"><div class="card-body"><small>Assets</small><h2>@Model.Assets</h2></div></div></div><div class="col-md-3"><div class="card stat"><div class="card-body"><small>Open tickets</small><h2>@Model.OpenTickets</h2></div></div></div><div class="col-md-3"><div class="card stat"><div class="card-body"><small>Assigned</small><h2>@Model.AssignedAssets</h2></div></div></div></div><div class="row g-4"><div class="col-lg-6"><div class="card"><div class="card-body"><h2 class="h5">Device status</h2><canvas id="chart"></canvas></div></div></div><div class="col-lg-6"><div class="card"><div class="card-body"><h2 class="h5">Recent tickets</h2><table class="table table-sm"><thead><tr><th>Number</th><th>Subject</th><th>Status</th></tr></thead><tbody>@foreach(var t in Model.RecentTickets){<tr><td>@t.Number</td><td>@t.Subject</td><td><span class="badge text-bg-secondary">@t.Status</span></td></tr>}</tbody></table></div></div></div></div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>new Chart(document.getElementById('chart'),{type:'doughnut',data:{labels:@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AssetStatus.Keys)),datasets:[{data:@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AssetStatus.Values)),backgroundColor:['#0d6efd','#198754','#ffc107','#dc3545']}]}})</script>
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Dashboard";
+    string TicketStatusClass(TicketStatus status) => status switch
+    {
+        TicketStatus.Open => "status-open",
+        TicketStatus.InProgress => "status-inprogress",
+        TicketStatus.Resolved => "status-resolved",
+        _ => "status-closed"
+    };
+    string PriorityClass(TicketPriority priority) => $"priority-{priority.ToString().ToLowerInvariant()}";
+}
+
+<div class="page-header">
+    <div>
+        <h2>Operations overview</h2>
+        <p>Live visibility across your people, devices and help desk workload.</p>
+    </div>
+    <div class="header-actions">
+        <a asp-controller="Tickets" asp-action="Create" class="button button-primary">＋ New ticket</a>
+        <a asp-controller="Assets" asp-action="Create" class="button button-secondary">＋ Add asset</a>
+    </div>
+</div>
+
+<section class="metric-grid">
+    <article class="metric-card">
+        <div class="metric-top"><span class="metric-label">Managed assets</span><span class="metric-icon">▣</span></div>
+        <div class="metric-value">@Model.Assets</div>
+        <div class="metric-note"><strong>@Model.AvailableAssets available</strong> for assignment</div>
+    </article>
+    <article class="metric-card warning">
+        <div class="metric-top"><span class="metric-label">Open tickets</span><span class="metric-icon">◎</span></div>
+        <div class="metric-value">@Model.OpenTickets</div>
+        <div class="metric-note">@Model.CriticalTickets critical request(s)</div>
+    </article>
+    <article class="metric-card success">
+        <div class="metric-top"><span class="metric-label">Employees</span><span class="metric-icon">♙</span></div>
+        <div class="metric-value">@Model.Employees</div>
+        <div class="metric-note">Active organization records</div>
+    </article>
+    <article class="metric-card">
+        <div class="metric-top"><span class="metric-label">Assigned devices</span><span class="metric-icon">↗</span></div>
+        <div class="metric-value">@Model.AssignedAssets</div>
+        <div class="metric-note">@Model.ResolvedTickets resolved or closed tickets</div>
+    </article>
+</section>
+
+<div class="dashboard-grid mb-3">
+    <section class="panel">
+        <div class="panel-header">
+            <div><h3>Operational distribution</h3><p>Current asset and ticket status breakdown</p></div>
+            <span class="status-badge status-available">Live data</span>
+        </div>
+        <div class="panel-body">
+            <div class="row g-4">
+                <div class="col-md-6"><div class="chart-wrap"><canvas id="assetChart"></canvas></div></div>
+                <div class="col-md-6"><div class="chart-wrap"><canvas id="ticketChart"></canvas></div></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-header"><div><h3>Quick actions</h3><p>Common IT workflows</p></div></div>
+        <div class="panel-body">
+            <div class="quick-grid">
+                <a class="quick-action" asp-controller="Tickets" asp-action="Create"><span>01</span><strong>Create support ticket</strong></a>
+                <a class="quick-action" asp-controller="Assets" asp-action="Create"><span>02</span><strong>Register new asset</strong></a>
+                <a class="quick-action" asp-controller="Employees" asp-action="Create"><span>03</span><strong>Add employee</strong></a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a class="quick-action" asp-controller="Reports" asp-action="Index"><span>04</span><strong>Export reports</strong></a>
+                }
+            </div>
+        </div>
+    </section>
+</div>
+
+<section class="panel">
+    <div class="panel-header">
+        <div><h3>Recent help desk activity</h3><p>The latest requests received by the IT team</p></div>
+        <a asp-controller="Tickets" asp-action="Index" class="button button-ghost button-sm">View all tickets</a>
+    </div>
+    <div class="table-responsive">
+        <table class="app-table">
+            <thead><tr><th>Ticket</th><th>Requester</th><th>Priority</th><th>Status</th><th>Created</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var ticket in Model.RecentTickets)
+            {
+                <tr>
+                    <td><strong>@ticket.Number</strong><div class="text-body-secondary small mt-1">@ticket.Subject</div></td>
+                    <td>@(ticket.RequesterName ?? "Not assigned")</td>
+                    <td><span class="priority-badge @PriorityClass(ticket.Priority)">@ticket.Priority</span></td>
+                    <td><span class="status-badge @TicketStatusClass(ticket.Status)">@ticket.Status</span></td>
+                    <td>@ticket.CreatedAt.ToLocalTime().ToString("dd MMM, HH:mm")</td>
+                    <td class="text-end"><a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="button button-ghost button-sm">Open</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script>
+        const chartText = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim() || '#6f7890';
+        Chart.defaults.color = chartText;
+        Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+
+        new Chart(document.getElementById('assetChart'), {
+            type: 'doughnut',
+            data: {
+                labels: @Html.Raw(JsonSerializer.Serialize(Model.AssetStatus.Keys.ToArray())),
+                datasets: [{
+                    data: @Html.Raw(JsonSerializer.Serialize(Model.AssetStatus.Values.ToArray())),
+                    backgroundColor: ['#20c997', '#5b6cff', '#f4b740', '#7a849c'],
+                    borderWidth: 0,
+                    hoverOffset: 5
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 18 } }, title: { display: true, text: 'Asset status', padding: 12 } }
+            }
+        });
+
+        new Chart(document.getElementById('ticketChart'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(JsonSerializer.Serialize(Model.TicketStatus.Keys.ToArray())),
+                datasets: [{
+                    label: 'Tickets',
+                    data: @Html.Raw(JsonSerializer.Serialize(Model.TicketStatus.Values.ToArray())),
+                    backgroundColor: '#5b6cff',
+                    borderRadius: 8,
+                    maxBarThickness: 42
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(120,130,150,.12)' } }, x: { grid: { display: false } } },
+                plugins: { legend: { display: false }, title: { display: true, text: 'Ticket workflow', padding: 12 } }
+            }
+        });
+    </script>
+}

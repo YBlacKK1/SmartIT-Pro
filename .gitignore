@@ -6,6 +6,16 @@
 *.suo
 logs/
 **/logs/
+LogFiles/
+**/LogFiles/
 **/wwwroot/uploads/
 appsettings.Local.json
 .env
+**/*.db
+**/*.db-shm
+**/*.db-wal
+azure-publish/
+SmartIT-Pro-v1.0-Azure.zip
+*.PublishSettings
+*.publishsettings
+*.pubxml.user

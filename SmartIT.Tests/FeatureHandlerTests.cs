@@ -58,6 +58,7 @@ public sealed class FeatureHandlerTests
         public Task<IReadOnlyList<Asset>> ListAsync(CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<Asset>>(Assets);
         public Task<Asset?> GetTrackedAsync(Guid id, CancellationToken cancellationToken) => Task.FromResult(Assets.FirstOrDefault(x => x.Id == id));
         public Task<Asset?> GetReadOnlyAsync(Guid id, CancellationToken cancellationToken) => GetTrackedAsync(id, cancellationToken);
+        public Task<Asset?> GetDetailsAsync(Guid id, CancellationToken cancellationToken) => GetTrackedAsync(id, cancellationToken);
         public Task<bool> AssetTagExistsAsync(string assetTag, Guid? excludingId, CancellationToken cancellationToken) => Task.FromResult(false);
         public Task<bool> SerialNumberExistsAsync(string serialNumber, Guid? excludingId, CancellationToken cancellationToken) => Task.FromResult(false);
         public Task AddAsync(Asset asset, CancellationToken cancellationToken) { Assets.Add(asset); return Task.CompletedTask; }
@@ -67,6 +68,7 @@ public sealed class FeatureHandlerTests
     {
         public List<Ticket> Tickets { get; } = [];
         public Task<IReadOnlyList<Ticket>> ListAsync(CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<Ticket>>(Tickets);
+        public Task<Ticket?> GetTrackedAsync(Guid id, CancellationToken cancellationToken) => Task.FromResult(Tickets.FirstOrDefault(x => x.Id == id));
         public Task<Ticket?> GetReadOnlyAsync(Guid id, CancellationToken cancellationToken) => Task.FromResult(Tickets.FirstOrDefault(x => x.Id == id));
         public Task<bool> RequesterExistsAsync(Guid requesterId, CancellationToken cancellationToken) => Task.FromResult(true);
         public Task<string> GenerateNextNumberAsync(CancellationToken cancellationToken) => Task.FromResult("INC-20260722-ABC12345");

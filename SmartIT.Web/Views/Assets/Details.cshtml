@@ -1,0 +1,81 @@
+@model AssetDetailsViewModel
+@{
+    ViewData["Title"] = "Asset details";
+    var asset = Model.Asset;
+    var activeAssignment = asset.Assignments.OrderByDescending(x => x.AssignedAt).FirstOrDefault(x => x.ReturnedAt is null);
+    var statusClass = $"status-{asset.Status.ToString().ToLowerInvariant()}";
+}
+<div class="page-header">
+    <div><h2>@asset.Name</h2><p>@asset.AssetTag · @asset.Type</p></div>
+    <div class="header-actions"><a asp-action="Edit" asp-route-id="@asset.Id" class="button button-primary">Edit asset</a><a asp-action="Index" class="button button-secondary">Back to inventory</a></div>
+</div>
+
+<div class="detail-grid">
+    <div>
+        <section class="panel">
+            <div class="panel-header"><div><h3>Device overview</h3><p>Identification and lifecycle data</p></div><span class="status-badge @statusClass">@asset.Status</span></div>
+            <div class="panel-body">
+                <div class="detail-list">
+                    <div class="detail-item"><span>Asset tag</span><strong>@asset.AssetTag</strong></div>
+                    <div class="detail-item"><span>Device type</span><strong>@asset.Type</strong></div>
+                    <div class="detail-item"><span>Manufacturer</span><strong>@(asset.Manufacturer ?? "Not specified")</strong></div>
+                    <div class="detail-item"><span>Model</span><strong>@(asset.Model ?? "Not specified")</strong></div>
+                    <div class="detail-item"><span>Serial number</span><strong>@(asset.SerialNumber ?? "Not specified")</strong></div>
+                    <div class="detail-item"><span>Created</span><strong>@asset.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</strong></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel assignment-card">
+            <div class="panel-header"><div><h3>Assignment</h3><p>Current device ownership</p></div></div>
+            <div class="panel-body">
+                @if (activeAssignment is not null)
+                {
+                    <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                        <div class="table-person">
+                            <span class="avatar avatar-md">@(activeAssignment.Employee?.FirstName.FirstOrDefault())@(activeAssignment.Employee?.LastName.FirstOrDefault())</span>
+                            <div><strong>@(activeAssignment.Employee?.FullName ?? "Unknown employee")</strong><small>Assigned @activeAssignment.AssignedAt.ToLocalTime().ToString("dd MMM yyyy") · @(activeAssignment.Notes ?? "No notes")</small></div>
+                        </div>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <form asp-controller="Operations" asp-action="Return" method="post">
+                                <input type="hidden" name="assignmentId" value="@activeAssignment.Id" />
+                                <button class="button button-secondary" type="submit">Return asset</button>
+                            </form>
+                        }
+                    </div>
+                }
+                else if (asset.Status == AssetStatus.Available && User.IsInRole("Admin"))
+                {
+                    <form asp-controller="Operations" asp-action="Assign" method="post">
+                        <input type="hidden" name="assetId" value="@asset.Id" />
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="employeeId">Assign to employee</label>
+                                <select id="employeeId" name="employeeId" class="form-select" required>
+                                    <option value="">Select employee</option>
+                                    @foreach (var employee in Model.Employees)
+                                    {
+                                        <option value="@employee.Id">@employee.FullName · @employee.Department?.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6"><label class="form-label">Assignment notes</label><input name="notes" class="form-control" placeholder="Optional note" /></div>
+                        </div>
+                        <button class="button button-primary mt-3" type="submit">Assign asset</button>
+                    </form>
+                }
+                else
+                {
+                    <div class="empty-state"><strong>No active assignment</strong><span>Change the asset status to Available before assigning it.</span></div>
+                }
+            </div>
+        </section>
+    </div>
+
+    <aside class="panel qr-card">
+        <img src="@Url.Action("Qr", "Reports", new { id = asset.Id })" alt="QR code for @asset.AssetTag" />
+        <h3 class="h6 mt-3 mb-1">Asset QR code</h3>
+        <p class="text-body-secondary small mb-0">Scan to open this asset record.</p>
+    </aside>
+</div>

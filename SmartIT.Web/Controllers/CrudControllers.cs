@@ -12,6 +12,8 @@ using SmartIT.Web.Hubs;
 
 namespace SmartIT.Web.Controllers;
 
+public sealed record AssetDetailsViewModel(Asset Asset, IReadOnlyList<Employee> Employees);
+
 [Authorize]
 public sealed class EmployeesController(ISender sender, IWebHostEnvironment environment) : Controller
 {
@@ -43,6 +45,7 @@ public sealed class EmployeesController(ISender sender, IWebHostEnvironment envi
             photoPath = await SaveProfilePhotoAsync(photo, cancellationToken);
             await sender.Send(new CreateEmployeeCommand(
                 dto.FirstName, dto.LastName, dto.Email, dto.JobTitle, dto.DepartmentId, photoPath), cancellationToken);
+            TempData["Success"] = "Employee created successfully.";
             return RedirectToAction(nameof(Index));
         }
         catch (ValidationException exception)
@@ -64,7 +67,7 @@ public sealed class EmployeesController(ISender sender, IWebHostEnvironment envi
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(EmployeeDto dto, CancellationToken cancellationToken)
+    public async Task<IActionResult> Edit(EmployeeDto dto, IFormFile? photo, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
         {
@@ -74,10 +77,14 @@ public sealed class EmployeesController(ISender sender, IWebHostEnvironment envi
 
         try
         {
+            var newPhotoPath = await SaveProfilePhotoAsync(photo, cancellationToken);
             var updated = await sender.Send(new UpdateEmployeeCommand(
                 dto.Id, dto.FirstName, dto.LastName, dto.Email, dto.JobTitle,
-                dto.DepartmentId, dto.ProfilePhotoPath), cancellationToken);
-            return updated ? RedirectToAction(nameof(Index)) : NotFound();
+                dto.DepartmentId, newPhotoPath), cancellationToken);
+
+            if (!updated) return NotFound();
+            TempData["Success"] = "Employee information updated.";
+            return RedirectToAction(nameof(Index));
         }
         catch (ValidationException exception)
         {
@@ -92,7 +99,15 @@ public sealed class EmployeesController(ISender sender, IWebHostEnvironment envi
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        await sender.Send(new DeleteEmployeeCommand(id), cancellationToken);
+        var deleted = await sender.Send(new DeleteEmployeeCommand(id), cancellationToken);
+        if (deleted)
+        {
+            TempData["Success"] = "Employee removed.";
+        }
+        else
+        {
+            TempData["Error"] = "Employee could not be removed because an asset assignment history is linked to this record.";
+        }
         return RedirectToAction(nameof(Index));
     }
 
@@ -102,14 +117,19 @@ public sealed class EmployeesController(ISender sender, IWebHostEnvironment envi
     private async Task<string?> SaveProfilePhotoAsync(IFormFile? photo, CancellationToken cancellationToken)
     {
         if (photo is null || photo.Length == 0) return null;
-        if (photo.Length > 5 * 1024 * 1024) throw new ValidationException("Profile photo cannot exceed 5 MB.");
+        if (photo.Length > 5 * 1024 * 1024)
+            throw new ValidationException("Profile photo cannot exceed 5 MB.");
 
         var allowedContentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "image/jpeg", "image/png", "image/webp"
         };
         var extension = Path.GetExtension(photo.FileName).ToLowerInvariant();
-        var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".webp" };
+        var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".jpg", ".jpeg", ".png", ".webp"
+        };
+
         if (!allowedContentTypes.Contains(photo.ContentType) || !allowedExtensions.Contains(extension))
             throw new ValidationException("Only JPG, PNG and WEBP images are allowed.");
 
@@ -125,9 +145,14 @@ public sealed class EmployeesController(ISender sender, IWebHostEnvironment envi
     private void AddValidationErrors(ValidationException exception)
     {
         if (exception.Errors.Any())
-            foreach (var error in exception.Errors) ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+        {
+            foreach (var error in exception.Errors)
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+        }
         else
+        {
             ModelState.AddModelError(string.Empty, exception.Message);
+        }
     }
 
     private static EmployeeDto ToDto(EmployeeListItem employee) => new(
@@ -136,7 +161,11 @@ public sealed class EmployeesController(ISender sender, IWebHostEnvironment envi
 }
 
 [Authorize]
-public sealed class AssetsController(ISender sender, IHubContext<NotificationHub> hub) : Controller
+public sealed class AssetsController(
+    ISender sender,
+    IHubContext<NotificationHub> hub,
+    IAssetRepository assetRepository,
+    IEmployeeRepository employeeRepository) : Controller
 {
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
@@ -152,18 +181,29 @@ public sealed class AssetsController(ISender sender, IHubContext<NotificationHub
     public async Task<IActionResult> Create(AssetDto dto, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid) return View(dto);
+
         try
         {
-            await sender.Send(new CreateAssetCommand(
+            var created = await sender.Send(new CreateAssetCommand(
                 dto.AssetTag, dto.Name, dto.Type, dto.Status, dto.Manufacturer, dto.Model, dto.SerialNumber), cancellationToken);
             await hub.Clients.All.SendAsync("notification", $"Asset {dto.AssetTag} added", cancellationToken);
-            return RedirectToAction(nameof(Index));
+            TempData["Success"] = "Asset added to inventory.";
+            return RedirectToAction(nameof(Details), new { id = created.Id });
         }
         catch (ValidationException exception)
         {
-            foreach (var error in exception.Errors) ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            AddValidationErrors(exception);
             return View(dto);
         }
+    }
+
+    public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
+    {
+        var asset = await assetRepository.GetDetailsAsync(id, cancellationToken);
+        if (asset is null) return NotFound();
+
+        var employees = await employeeRepository.ListAsync(cancellationToken);
+        return View(new AssetDetailsViewModel(asset, employees));
     }
 
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
@@ -177,17 +217,34 @@ public sealed class AssetsController(ISender sender, IHubContext<NotificationHub
     public async Task<IActionResult> Edit(AssetDto dto, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid) return View(dto);
+
         try
         {
             var updated = await sender.Send(new UpdateAssetCommand(
                 dto.Id, dto.AssetTag, dto.Name, dto.Type, dto.Status,
                 dto.Manufacturer, dto.Model, dto.SerialNumber), cancellationToken);
-            return updated ? RedirectToAction(nameof(Index)) : NotFound();
+
+            if (!updated) return NotFound();
+            TempData["Success"] = "Asset information updated.";
+            return RedirectToAction(nameof(Details), new { id = dto.Id });
         }
         catch (ValidationException exception)
         {
-            foreach (var error in exception.Errors) ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            AddValidationErrors(exception);
             return View(dto);
+        }
+    }
+
+    private void AddValidationErrors(ValidationException exception)
+    {
+        if (exception.Errors.Any())
+        {
+            foreach (var error in exception.Errors)
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+        }
+        else
+        {
+            ModelState.AddModelError(string.Empty, exception.Message);
         }
     }
 
@@ -197,7 +254,12 @@ public sealed class AssetsController(ISender sender, IHubContext<NotificationHub
 }
 
 [Authorize]
-public sealed class TicketsController(ISender sender, IHubContext<NotificationHub> hub) : Controller
+public sealed class TicketsController(
+    ISender sender,
+    IHubContext<NotificationHub> hub,
+    IEmployeeRepository employeeRepository,
+    IRepository<AuditLog> auditLogs,
+    IUnitOfWork unitOfWork) : Controller
 {
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
@@ -205,28 +267,73 @@ public sealed class TicketsController(ISender sender, IHubContext<NotificationHu
         return View(tickets.Select(ToDto).ToArray());
     }
 
-    public IActionResult Create() =>
-        View(new TicketDto(Guid.Empty, "", "", "", TicketPriority.Medium, TicketStatus.Open, null, DateTime.UtcNow));
+    public async Task<IActionResult> Create(CancellationToken cancellationToken)
+    {
+        await PopulateEmployeesAsync(cancellationToken);
+        return View(new TicketDto(
+            Guid.Empty, "", "", "", TicketPriority.Medium, TicketStatus.Open, null, null, DateTime.UtcNow));
+    }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(TicketDto dto, CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid) return View(dto);
+        if (!ModelState.IsValid)
+        {
+            await PopulateEmployeesAsync(cancellationToken);
+            return View(dto);
+        }
+
         try
         {
-            await sender.Send(new CreateTicketCommand(dto.Subject, dto.Description, dto.Priority, dto.RequesterId), cancellationToken);
+            var ticket = await sender.Send(
+                new CreateTicketCommand(dto.Subject, dto.Description, dto.Priority, dto.RequesterId), cancellationToken);
             await hub.Clients.All.SendAsync("notification", $"New ticket: {dto.Subject}", cancellationToken);
-            return RedirectToAction(nameof(Index));
+            TempData["Success"] = "Help desk ticket created.";
+            return RedirectToAction(nameof(Details), new { id = ticket.Id });
         }
         catch (ValidationException exception)
         {
-            foreach (var error in exception.Errors) ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            foreach (var error in exception.Errors)
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            await PopulateEmployeesAsync(cancellationToken);
             return View(dto);
         }
     }
 
+    public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
+    {
+        var ticket = await sender.Send(new GetTicketByIdQuery(id), cancellationToken);
+        return ticket is null ? NotFound() : View(ToDto(ticket));
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateStatus(Guid id, TicketStatus status, CancellationToken cancellationToken)
+    {
+        var updated = await sender.Send(new UpdateTicketStatusCommand(id, status), cancellationToken);
+        if (!updated) return NotFound();
+
+        await auditLogs.AddAsync(new AuditLog
+        {
+            UserName = User.Identity?.Name ?? "system",
+            Action = "Status change",
+            EntityName = nameof(Ticket),
+            Details = $"Ticket {id} changed to {status}",
+            IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+        }, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await hub.Clients.All.SendAsync("notification", $"Ticket status changed to {status}", cancellationToken);
+        TempData["Success"] = "Ticket status updated.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    private async Task PopulateEmployeesAsync(CancellationToken cancellationToken) =>
+        ViewBag.Employees = await employeeRepository.ListAsync(cancellationToken);
+
     private static TicketDto ToDto(TicketListItem ticket) => new(
         ticket.Id, ticket.Number, ticket.Subject, ticket.Description, ticket.Priority,
-        ticket.Status, ticket.RequesterId, ticket.CreatedAt);
+        ticket.Status, ticket.RequesterId, ticket.RequesterName, ticket.CreatedAt);
 }

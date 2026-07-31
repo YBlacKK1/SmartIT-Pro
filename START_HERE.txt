@@ -1,0 +1,16 @@
+SMARTIT PRO v1.0.1 - HIZLI BASLANGIC
+
+1) ZIP dosyasinin tamamini klasore cikarin.
+2) SMARTIT_SITEYI_AC.bat dosyasina cift tiklayin.
+3) Ilk calistirmada yerel yonetici e-posta ve sifrenizi belirleyin.
+4) Siyah pencereyi acik tutun.
+5) Tarayici otomatik olarak http://localhost:5101 adresini acar.
+
+GIRIS
+Ilk calistirmada belirlediginiz bilgilerle giris yapin.
+Sifre kaynak kodda tutulmaz.
+
+NOT
+- Ana site SmartIT.Web uygulamasidir ve 5101 portunda acilir.
+- 5201/swagger gelistirici API ekranidir; ana site degildir.
+- Verileri sifirlamak icin RESET_LOCAL_DATABASE.bat kullanilir.

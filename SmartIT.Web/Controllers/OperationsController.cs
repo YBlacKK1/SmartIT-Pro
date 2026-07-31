@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SmartIT.Application;
 using SmartIT.Domain;
+using SmartIT.Infrastructure;
 
 namespace SmartIT.Web.Controllers;
 
@@ -11,20 +13,25 @@ public sealed class OperationsController(
     IRepository<Employee> employees,
     IRepository<AssetAssignment> assignments,
     IRepository<SoftwareLicense> licenses,
-    IRepository<MaintenanceSchedule> maintenance,
     IRepository<AuditLog> audit,
-    IUnitOfWork unitOfWork) : Controller
+    IUnitOfWork unitOfWork,
+    SmartITDbContext dbContext) : Controller
 {
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Assign(Guid assetId, Guid employeeId, string? notes, CancellationToken cancellationToken)
+    public async Task<IActionResult> Assign(
+        Guid assetId,
+        Guid employeeId,
+        string? notes,
+        CancellationToken cancellationToken)
     {
         var asset = await assets.GetByIdAsync(assetId, cancellationToken);
         var employee = await employees.GetByIdAsync(employeeId, cancellationToken);
 
         if (asset is null || employee is null || asset.Status != AssetStatus.Available)
         {
-            return BadRequest();
+            TempData["Error"] = "The asset cannot be assigned.";
+            return RedirectToAction("Index", "Assets");
         }
 
         asset.Status = AssetStatus.Assigned;
@@ -32,8 +39,9 @@ public sealed class OperationsController(
         {
             AssetId = assetId,
             EmployeeId = employeeId,
-            Notes = notes
+            Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim()
         }, cancellationToken);
+
         await audit.AddAsync(new AuditLog
         {
             UserName = User.Identity?.Name ?? "system",
@@ -44,12 +52,15 @@ public sealed class OperationsController(
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return RedirectToAction("Index", "Assets");
+        TempData["Success"] = $"{asset.AssetTag} assigned to {employee.FullName}.";
+        return RedirectToAction("Details", "Assets", new { id = assetId });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Return(Guid assignmentId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Return(
+        Guid assignmentId,
+        CancellationToken cancellationToken)
     {
         var assignment = await assignments.GetByIdAsync(assignmentId, cancellationToken);
         if (assignment is null || assignment.ReturnedAt is not null)
@@ -64,11 +75,30 @@ public sealed class OperationsController(
             asset.Status = AssetStatus.Available;
         }
 
+        await audit.AddAsync(new AuditLog
+        {
+            UserName = User.Identity?.Name ?? "system",
+            Action = "Return",
+            EntityName = nameof(Asset),
+            Details = asset is null ? $"Assignment {assignmentId} returned" : $"{asset.AssetTag} returned to inventory",
+            IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+        }, cancellationToken);
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return RedirectToAction("Index", "Assets");
+        TempData["Success"] = "Asset returned to inventory.";
+        return RedirectToAction("Details", "Assets", new { id = assignment.AssetId });
     }
 
-    public async Task<IActionResult> Licenses(CancellationToken cancellationToken) => View(await licenses.GetAllAsync(cancellationToken));
-    public async Task<IActionResult> Maintenance(CancellationToken cancellationToken) => View(await maintenance.GetAllAsync(cancellationToken));
-    public async Task<IActionResult> Audit(CancellationToken cancellationToken) => View(await audit.GetAllAsync(cancellationToken));
+    public async Task<IActionResult> Licenses(CancellationToken cancellationToken) =>
+        View(await licenses.GetAllAsync(cancellationToken));
+
+    public async Task<IActionResult> Maintenance(CancellationToken cancellationToken) =>
+        View(await dbContext.MaintenanceSchedules
+            .AsNoTracking()
+            .Include(x => x.Asset)
+            .OrderBy(x => x.ScheduledFor)
+            .ToListAsync(cancellationToken));
+
+    public async Task<IActionResult> Audit(CancellationToken cancellationToken) =>
+        View(await audit.GetAllAsync(cancellationToken));
 }

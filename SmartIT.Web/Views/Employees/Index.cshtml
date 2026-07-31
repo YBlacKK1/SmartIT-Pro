@@ -1,2 +1,59 @@
 @model IEnumerable<EmployeeDto>
-<div class="d-flex justify-content-between mb-3"><h1 class="h3">Employees</h1><a asp-action="Create" class="btn btn-primary">Add employee</a></div><div class="card"><div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th>Name</th><th>Email</th><th>Title</th><th>Department</th><th></th></tr></thead><tbody>@foreach(var e in Model){<tr><td>@e.FirstName @e.LastName</td><td>@e.Email</td><td>@e.JobTitle</td><td>@e.DepartmentName</td><td><a asp-action="Edit" asp-route-id="@e.Id" class="btn btn-sm btn-outline-primary">Edit</a></td></tr>}</tbody></table></div></div>
+@{
+    ViewData["Title"] = "Employees";
+}
+<div class="page-header">
+    <div><h2>Employee directory</h2><p>Manage people, departments and device ownership.</p></div>
+    <div class="header-actions"><a asp-action="Create" class="button button-primary">＋ Add employee</a></div>
+</div>
+
+<div class="toolbar">
+    <div class="search-box"><input type="search" placeholder="Search name, email or department..." data-table-search="#employeesTable" /></div>
+    <span class="text-body-secondary small">@Model.Count() employee record(s)</span>
+</div>
+
+<section class="panel">
+    <div class="table-responsive">
+        <table class="app-table" id="employeesTable">
+            <thead><tr><th>Employee</th><th>Job title</th><th>Department</th><th>Email</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var employee in Model)
+            {
+                var initials = $"{employee.FirstName.FirstOrDefault()}{employee.LastName.FirstOrDefault()}".ToUpperInvariant();
+                <tr>
+                    <td>
+                        <div class="table-person">
+                            <span class="avatar avatar-md">
+                                @if (!string.IsNullOrWhiteSpace(employee.ProfilePhotoPath))
+                                {
+                                    <img src="@employee.ProfilePhotoPath" alt="@employee.FirstName @employee.LastName" />
+                                }
+                                else
+                                {
+                                    @initials
+                                }
+                            </span>
+                            <div><strong>@employee.FirstName @employee.LastName</strong><small>Employee ID · @(employee.Id.ToString()[..8])</small></div>
+                        </div>
+                    </td>
+                    <td>@(employee.JobTitle ?? "—")</td>
+                    <td><span class="status-badge status-inprogress">@(employee.DepartmentName ?? "Unassigned")</span></td>
+                    <td>@employee.Email</td>
+                    <td>
+                        <div class="table-actions">
+                            <a asp-action="Edit" asp-route-id="@employee.Id" class="button button-ghost button-sm">Edit</a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <form asp-action="Delete" method="post">
+                                    <input type="hidden" name="id" value="@employee.Id" />
+                                    <button type="submit" class="button button-danger button-sm" data-confirm="Remove this employee?">Delete</button>
+                                </form>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

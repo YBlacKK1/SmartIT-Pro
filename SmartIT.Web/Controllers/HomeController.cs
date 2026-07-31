@@ -1,3 +1,22 @@
-using Microsoft.AspNetCore.Authorization; using Microsoft.AspNetCore.Mvc; using SmartIT.Application;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SmartIT.Application;
+
 namespace SmartIT.Web.Controllers;
-[Authorize] public class HomeController(IDashboardService dashboard):Controller { public async Task<IActionResult> Index(CancellationToken ct)=>View(await dashboard.GetAsync(ct)); [AllowAnonymous] public IActionResult Error()=>View(); }
+
+[Authorize]
+public sealed class HomeController(IDashboardService dashboardService) : Controller
+{
+    public async Task<IActionResult> Index(CancellationToken cancellationToken) =>
+        View(await dashboardService.GetAsync(cancellationToken));
+
+    [AllowAnonymous]
+    public IActionResult Error() => View();
+
+    [AllowAnonymous]
+    public IActionResult StatusCode(int code)
+    {
+        ViewBag.StatusCode = code;
+        return View();
+    }
+}

@@ -1,2 +1,41 @@
 @model EmployeeDto
-<h1 class="h3">Edit employee</h1><form method="post" class="card p-4"><input asp-for="Id" type="hidden"/><input asp-for="DepartmentId" type="hidden"/><input asp-for="DepartmentName" type="hidden"/><input asp-for="ProfilePhotoPath" type="hidden"/><div class="row g-3"><div class="col-md-6"><label asp-for="FirstName" class="form-label"></label><input asp-for="FirstName" class="form-control"/></div><div class="col-md-6"><label asp-for="LastName" class="form-label"></label><input asp-for="LastName" class="form-control"/></div><div class="col-md-6"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control"/></div><div class="col-md-6"><label asp-for="JobTitle" class="form-label"></label><input asp-for="JobTitle" class="form-control"/></div></div><button class="btn btn-primary mt-4">Save</button></form>
+@{
+    ViewData["Title"] = "Edit employee";
+    var initials = $"{Model.FirstName.FirstOrDefault()}{Model.LastName.FirstOrDefault()}".ToUpperInvariant();
+}
+<div class="page-header">
+    <div><h2>Edit employee profile</h2><p>Update contact, department and profile image.</p></div>
+    <a asp-action="Index" class="button button-secondary">← Back to employees</a>
+</div>
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data" class="panel">
+    <input asp-for="Id" type="hidden" />
+    <input asp-for="ProfilePhotoPath" type="hidden" />
+    <div class="panel-header">
+        <div class="table-person">
+            <span class="avatar avatar-lg">
+                @if (!string.IsNullOrWhiteSpace(Model.ProfilePhotoPath))
+                {
+                    <img src="@Model.ProfilePhotoPath" alt="@Model.FirstName @Model.LastName" />
+                }
+                else
+                {
+                    @initials
+                }
+            </span>
+            <div><h3>@Model.FirstName @Model.LastName</h3><p>@(Model.JobTitle ?? "Employee profile")</p></div>
+        </div>
+    </div>
+    <div class="panel-body">
+        <div asp-validation-summary="ModelOnly" class="validation-summary-errors mb-3"></div>
+        <div class="row g-3">
+            <div class="col-md-6"><label asp-for="FirstName" class="form-label"></label><input asp-for="FirstName" class="form-control" /><span asp-validation-for="FirstName" class="field-validation-error"></span></div>
+            <div class="col-md-6"><label asp-for="LastName" class="form-label"></label><input asp-for="LastName" class="form-control" /><span asp-validation-for="LastName" class="field-validation-error"></span></div>
+            <div class="col-md-6"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" type="email" /><span asp-validation-for="Email" class="field-validation-error"></span></div>
+            <div class="col-md-6"><label asp-for="JobTitle" class="form-label"></label><input asp-for="JobTitle" class="form-control" /><span asp-validation-for="JobTitle" class="field-validation-error"></span></div>
+            <div class="col-md-6"><label asp-for="DepartmentId" class="form-label">Department</label><select asp-for="DepartmentId" class="form-select" asp-items="@(new SelectList(ViewBag.Departments, "Id", "Name"))"></select><span asp-validation-for="DepartmentId" class="field-validation-error"></span></div>
+            <div class="col-md-6"><label class="form-label">Replace profile photo</label><input name="photo" type="file" accept="image/jpeg,image/png,image/webp" class="form-control" /><div class="form-text">Leave empty to keep the current image.</div></div>
+        </div>
+        <div class="form-actions"><button class="button button-primary" type="submit">Save changes</button><a asp-action="Index" class="button button-ghost">Cancel</a></div>
+    </div>
+</form>

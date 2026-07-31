@@ -1,2 +1,34 @@
 @model TicketDto
-<h1 class="h3">New help desk ticket</h1><form method="post" class="card p-4"><div class="mb-3"><label asp-for="Subject" class="form-label"></label><input asp-for="Subject" class="form-control"/></div><div class="mb-3"><label asp-for="Description" class="form-label"></label><textarea asp-for="Description" class="form-control" rows="5"></textarea></div><div class="row"><div class="col-md-4"><label asp-for="Priority" class="form-label"></label><select asp-for="Priority" asp-items="Html.GetEnumSelectList<TicketPriority>()" class="form-select"></select></div></div><input asp-for="Status" type="hidden"/><input asp-for="CreatedAt" type="hidden"/><button class="btn btn-primary mt-4">Submit ticket</button></form>
+@{
+    ViewData["Title"] = "New ticket";
+    var employees = ViewBag.Employees as IEnumerable<Employee> ?? Enumerable.Empty<Employee>();
+}
+<div class="page-header">
+    <div><h2>Create help desk ticket</h2><p>Record a support request with priority and requester information.</p></div>
+    <a asp-action="Index" class="button button-secondary">← Back to queue</a>
+</div>
+
+<form asp-action="Create" method="post" class="panel">
+    <input asp-for="Status" type="hidden" />
+    <input asp-for="CreatedAt" type="hidden" />
+    <div class="panel-header"><div><h3>Request details</h3><p>Provide enough information for the IT team to begin work.</p></div></div>
+    <div class="panel-body">
+        <div asp-validation-summary="ModelOnly" class="validation-summary-errors mb-3"></div>
+        <div class="row g-3">
+            <div class="col-12"><label asp-for="Subject" class="form-label"></label><input asp-for="Subject" class="form-control" placeholder="Brief summary of the issue" /><span asp-validation-for="Subject" class="field-validation-error"></span></div>
+            <div class="col-12"><label asp-for="Description" class="form-label"></label><textarea asp-for="Description" class="form-control" rows="7" placeholder="Describe the problem, affected device and any troubleshooting already attempted..."></textarea><span asp-validation-for="Description" class="field-validation-error"></span></div>
+            <div class="col-md-6"><label asp-for="Priority" class="form-label"></label><select asp-for="Priority" asp-items="Html.GetEnumSelectList<TicketPriority>()" class="form-select"></select></div>
+            <div class="col-md-6">
+                <label asp-for="RequesterId" class="form-label">Requester</label>
+                <select asp-for="RequesterId" class="form-select">
+                    <option value="">No requester selected</option>
+                    @foreach (var employee in employees)
+                    {
+                        <option value="@employee.Id">@employee.FullName · @employee.Department?.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="form-actions"><button class="button button-primary" type="submit">Submit ticket</button><a asp-action="Index" class="button button-ghost">Cancel</a></div>
+    </div>
+</form>

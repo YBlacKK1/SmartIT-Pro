@@ -7,6 +7,7 @@ namespace SmartIT.Application.Tickets;
 public interface ITicketRepository
 {
     Task<IReadOnlyList<Ticket>> ListAsync(CancellationToken cancellationToken);
+    Task<Ticket?> GetTrackedAsync(Guid id, CancellationToken cancellationToken);
     Task<Ticket?> GetReadOnlyAsync(Guid id, CancellationToken cancellationToken);
     Task<bool> RequesterExistsAsync(Guid requesterId, CancellationToken cancellationToken);
     Task<string> GenerateNextNumberAsync(CancellationToken cancellationToken);
@@ -21,6 +22,7 @@ public sealed record TicketListItem(
     TicketPriority Priority,
     TicketStatus Status,
     Guid? RequesterId,
+    string? RequesterName,
     DateTime CreatedAt);
 
 public sealed record GetTicketsQuery : IRequest<IReadOnlyList<TicketListItem>>;
@@ -30,12 +32,20 @@ public sealed record CreateTicketCommand(
     string Description,
     TicketPriority Priority,
     Guid? RequesterId) : IRequest<TicketListItem>;
+public sealed record UpdateTicketStatusCommand(Guid Id, TicketStatus Status) : IRequest<bool>;
 
 public static class TicketMappings
 {
     public static TicketListItem ToListItem(this Ticket ticket) => new(
-        ticket.Id, ticket.Number, ticket.Subject, ticket.Description,
-        ticket.Priority, ticket.Status, ticket.RequesterId, ticket.CreatedAt);
+        ticket.Id,
+        ticket.Number,
+        ticket.Subject,
+        ticket.Description,
+        ticket.Priority,
+        ticket.Status,
+        ticket.RequesterId,
+        ticket.Requester?.FullName,
+        ticket.CreatedAt);
 }
 
 public sealed class GetTicketsHandler(ITicketRepository repository)
@@ -73,6 +83,20 @@ public sealed class CreateTicketHandler(ITicketRepository repository, IUnitOfWor
     }
 }
 
+public sealed class UpdateTicketStatusHandler(ITicketRepository repository, IUnitOfWork unitOfWork)
+    : IRequestHandler<UpdateTicketStatusCommand, bool>
+{
+    public async Task<bool> Handle(UpdateTicketStatusCommand request, CancellationToken cancellationToken)
+    {
+        var ticket = await repository.GetTrackedAsync(request.Id, cancellationToken);
+        if (ticket is null) return false;
+
+        ticket.Status = request.Status;
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+}
+
 public sealed class CreateTicketCommandValidator : AbstractValidator<CreateTicketCommand>
 {
     public CreateTicketCommandValidator(ITicketRepository repository)
@@ -83,5 +107,14 @@ public sealed class CreateTicketCommandValidator : AbstractValidator<CreateTicke
         RuleFor(x => x.RequesterId)
             .MustAsync(async (requesterId, ct) => requesterId is null || await repository.RequesterExistsAsync(requesterId.Value, ct))
             .WithMessage("Requester does not exist.");
+    }
+}
+
+public sealed class UpdateTicketStatusCommandValidator : AbstractValidator<UpdateTicketStatusCommand>
+{
+    public UpdateTicketStatusCommandValidator()
+    {
+        RuleFor(x => x.Id).NotEmpty();
+        RuleFor(x => x.Status).IsInEnum();
     }
 }

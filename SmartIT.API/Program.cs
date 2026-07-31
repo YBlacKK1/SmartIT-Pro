@@ -1,6 +1,4 @@
 using System.Text;
-using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -17,6 +15,14 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+
+    if (builder.Environment.IsDevelopment())
+    {
+        var localDatabase = Path.GetFullPath(Path.Combine(
+            builder.Environment.ContentRootPath, "..", "SmartIT.Web", "smartit-v1.db"));
+        builder.Configuration["ConnectionStrings:DefaultConnection"] =
+            $"Data Source={localDatabase};Cache=Shared;Foreign Keys=True";
+    }
     builder.Host.UseSerilog((context, services, configuration) => configuration
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
@@ -28,16 +34,16 @@ try
     builder.Services.AddProblemDetails();
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
-    builder.Services.AddFluentValidationAutoValidation();
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
 
-    var jwtKey = builder.Configuration["Jwt:Key"]
-        ?? throw new InvalidOperationException("JWT signing key is not configured.");
-    var jwtIssuer = builder.Configuration["Jwt:Issuer"]
-        ?? throw new InvalidOperationException("JWT issuer is not configured.");
-    var jwtAudience = builder.Configuration["Jwt:Audience"]
-        ?? throw new InvalidOperationException("JWT audience is not configured.");
+    var jwtKey = builder.Configuration["Jwt:Key"];
+    var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+    var jwtAudience = builder.Configuration["Jwt:Audience"];
+    if (string.IsNullOrWhiteSpace(jwtKey) || string.IsNullOrWhiteSpace(jwtIssuer) || string.IsNullOrWhiteSpace(jwtAudience))
+    {
+        throw new InvalidOperationException("JWT issuer, audience and signing key must be configured.");
+    }
 
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
@@ -87,7 +93,10 @@ try
         app.UseSwaggerUI();
     }
 
-    app.UseHttpsRedirection();
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+    }
     app.UseSerilogRequestLogging();
     app.UseAuthentication();
     app.UseAuthorization();

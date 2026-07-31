@@ -1,2 +1,45 @@
 @model IEnumerable<AssetDto>
-<div class="d-flex justify-content-between mb-3"><h1 class="h3">Asset inventory</h1><a asp-action="Create" class="btn btn-primary">Add asset</a></div><div class="card"><div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th>Tag</th><th>Name</th><th>Type</th><th>Status</th><th></th></tr></thead><tbody>@foreach(var a in Model){<tr><td>@a.AssetTag</td><td>@a.Name</td><td>@a.Type</td><td><span class="badge text-bg-info">@a.Status</span></td><td><a asp-action="Edit" asp-route-id="@a.Id" class="btn btn-sm btn-outline-primary">Edit</a> <a asp-controller="Reports" asp-action="Qr" asp-route-id="@a.Id" class="btn btn-sm btn-outline-secondary">QR</a></td></tr>}</tbody></table></div></div>
+@{
+    ViewData["Title"] = "Asset inventory";
+    string StatusClass(AssetStatus status) => $"status-{status.ToString().ToLowerInvariant()}";
+}
+<div class="page-header">
+    <div><h2>Asset inventory</h2><p>Track hardware status, ownership and lifecycle information.</p></div>
+    <div class="header-actions"><a asp-action="Create" class="button button-primary">＋ Add asset</a></div>
+</div>
+
+<div class="metric-grid">
+    <article class="metric-card"><div class="metric-top"><span class="metric-label">Total assets</span><span class="metric-icon">▣</span></div><div class="metric-value">@Model.Count()</div><div class="metric-note">All registered equipment</div></article>
+    <article class="metric-card success"><div class="metric-top"><span class="metric-label">Available</span><span class="metric-icon">✓</span></div><div class="metric-value">@Model.Count(x => x.Status == AssetStatus.Available)</div><div class="metric-note">Ready for assignment</div></article>
+    <article class="metric-card"><div class="metric-top"><span class="metric-label">Assigned</span><span class="metric-icon">↗</span></div><div class="metric-value">@Model.Count(x => x.Status == AssetStatus.Assigned)</div><div class="metric-note">Currently in use</div></article>
+    <article class="metric-card warning"><div class="metric-top"><span class="metric-label">Maintenance</span><span class="metric-icon">⚙</span></div><div class="metric-value">@Model.Count(x => x.Status == AssetStatus.InMaintenance)</div><div class="metric-note">Requires attention</div></article>
+</div>
+
+<div class="toolbar">
+    <div class="search-box"><input type="search" placeholder="Search tag, device, model or status..." data-table-search="#assetsTable" /></div>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-controller="Reports" asp-action="Index" class="button button-secondary button-sm">Export inventory</a>
+    }
+</div>
+
+<section class="panel">
+    <div class="table-responsive">
+        <table class="app-table" id="assetsTable">
+            <thead><tr><th>Asset</th><th>Type</th><th>Manufacturer / Model</th><th>Serial number</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var asset in Model)
+            {
+                <tr>
+                    <td><strong>@asset.AssetTag</strong><div class="text-body-secondary small mt-1">@asset.Name</div></td>
+                    <td>@asset.Type</td>
+                    <td>@(asset.Manufacturer ?? "—") <span class="text-body-secondary">@(asset.Model is null ? "" : $"· {asset.Model}")</span></td>
+                    <td>@(asset.SerialNumber ?? "—")</td>
+                    <td><span class="status-badge @StatusClass(asset.Status)">@asset.Status</span></td>
+                    <td><div class="table-actions"><a asp-action="Details" asp-route-id="@asset.Id" class="button button-primary button-sm">Details</a><a asp-action="Edit" asp-route-id="@asset.Id" class="button button-ghost button-sm">Edit</a></div></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

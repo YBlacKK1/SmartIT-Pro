@@ -1,2 +1,49 @@
 @model IEnumerable<TicketDto>
-<div class="d-flex justify-content-between mb-3"><h1 class="h3">Help Desk</h1><a asp-action="Create" class="btn btn-primary">New ticket</a></div><div class="card"><table class="table table-hover mb-0"><thead><tr><th>Number</th><th>Subject</th><th>Priority</th><th>Status</th><th>Created</th></tr></thead><tbody>@foreach(var t in Model){<tr><td>@t.Number</td><td>@t.Subject</td><td>@t.Priority</td><td>@t.Status</td><td>@t.CreatedAt.ToLocalTime()</td></tr>}</tbody></table></div>
+@{
+    ViewData["Title"] = "Help Desk";
+    string StatusClass(TicketStatus status) => status switch
+    {
+        TicketStatus.Open => "status-open",
+        TicketStatus.InProgress => "status-inprogress",
+        TicketStatus.Resolved => "status-resolved",
+        _ => "status-closed"
+    };
+    string PriorityClass(TicketPriority priority) => $"priority-{priority.ToString().ToLowerInvariant()}";
+}
+<div class="page-header">
+    <div><h2>Help desk queue</h2><p>Prioritize, track and resolve internal support requests.</p></div>
+    <div class="header-actions"><a asp-action="Create" class="button button-primary">＋ New ticket</a></div>
+</div>
+
+<div class="metric-grid">
+    <article class="metric-card warning"><div class="metric-top"><span class="metric-label">Open</span><span class="metric-icon">◎</span></div><div class="metric-value">@Model.Count(x => x.Status == TicketStatus.Open)</div><div class="metric-note">Waiting for action</div></article>
+    <article class="metric-card"><div class="metric-top"><span class="metric-label">In progress</span><span class="metric-icon">↻</span></div><div class="metric-value">@Model.Count(x => x.Status == TicketStatus.InProgress)</div><div class="metric-note">Currently being handled</div></article>
+    <article class="metric-card success"><div class="metric-top"><span class="metric-label">Resolved</span><span class="metric-icon">✓</span></div><div class="metric-value">@Model.Count(x => x.Status == TicketStatus.Resolved)</div><div class="metric-note">Solution delivered</div></article>
+    <article class="metric-card danger"><div class="metric-top"><span class="metric-label">Critical</span><span class="metric-icon">!</span></div><div class="metric-value">@Model.Count(x => x.Priority == TicketPriority.Critical && x.Status != TicketStatus.Closed)</div><div class="metric-note">Immediate attention required</div></article>
+</div>
+
+<div class="toolbar">
+    <div class="search-box"><input type="search" placeholder="Search ticket, requester or status..." data-table-search="#ticketsTable" /></div>
+    <span class="text-body-secondary small">@Model.Count() total ticket(s)</span>
+</div>
+
+<section class="panel">
+    <div class="table-responsive">
+        <table class="app-table" id="ticketsTable">
+            <thead><tr><th>Ticket</th><th>Requester</th><th>Priority</th><th>Status</th><th>Created</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var ticket in Model)
+            {
+                <tr>
+                    <td><strong>@ticket.Number</strong><div class="text-body-secondary small mt-1">@ticket.Subject</div></td>
+                    <td>@(ticket.RequesterName ?? "Not assigned")</td>
+                    <td><span class="priority-badge @PriorityClass(ticket.Priority)">@ticket.Priority</span></td>
+                    <td><span class="status-badge @StatusClass(ticket.Status)">@ticket.Status</span></td>
+                    <td>@ticket.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</td>
+                    <td class="text-end"><a asp-action="Details" asp-route-id="@ticket.Id" class="button button-primary button-sm">Open ticket</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

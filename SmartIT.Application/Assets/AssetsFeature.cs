@@ -9,6 +9,7 @@ public interface IAssetRepository
     Task<IReadOnlyList<Asset>> ListAsync(CancellationToken cancellationToken);
     Task<Asset?> GetTrackedAsync(Guid id, CancellationToken cancellationToken);
     Task<Asset?> GetReadOnlyAsync(Guid id, CancellationToken cancellationToken);
+    Task<Asset?> GetDetailsAsync(Guid id, CancellationToken cancellationToken);
     Task<bool> AssetTagExistsAsync(string assetTag, Guid? excludingId, CancellationToken cancellationToken);
     Task<bool> SerialNumberExistsAsync(string serialNumber, Guid? excludingId, CancellationToken cancellationToken);
     Task AddAsync(Asset asset, CancellationToken cancellationToken);

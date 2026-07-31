@@ -1,0 +1,48 @@
+@{
+    ViewData["Title"] = "Reports";
+    var assetCount = ViewBag.AssetCount is int count ? count : 0;
+}
+
+<section class="page-heading">
+    <div>
+        <div class="eyebrow">DATA & EXPORTS</div>
+        <h2>Reporting center</h2>
+        <p>Export a clean snapshot of the asset inventory for analysis, sharing or archiving.</p>
+    </div>
+</section>
+
+<section class="report-hero panel">
+    <div>
+        <span class="report-kicker">ASSET INVENTORY REPORT</span>
+        <h3>@assetCount managed assets ready to export</h3>
+        <p>Exports include asset tag, name, type, status, manufacturer, model and serial number.</p>
+    </div>
+    <div class="report-hero-mark">↗</div>
+</section>
+
+<div class="report-grid mt-4">
+    <article class="panel report-card">
+        <div class="report-format">CSV</div>
+        <div><h3>Comma-separated data</h3><p>Best for lightweight imports, scripts and quick data transfer.</p></div>
+        <a class="button button-secondary" asp-action="AssetsCsv">Download CSV</a>
+    </article>
+    <article class="panel report-card featured">
+        <div class="report-format">XLSX</div>
+        <div><h3>Excel workbook</h3><p>Formatted spreadsheet ready for filtering, sorting and business review.</p></div>
+        <a class="button button-primary" asp-action="AssetsExcel">Download Excel</a>
+    </article>
+    <article class="panel report-card">
+        <div class="report-format">PDF</div>
+        <div><h3>Portable report</h3><p>A presentation-ready inventory document with a clear printable layout.</p></div>
+        <a class="button button-secondary" asp-action="AssetsPdf">Download PDF</a>
+    </article>
+</div>
+
+<section class="panel mt-4">
+    <div class="panel-header"><div><h3>Export notes</h3><p>Local v1.0 reporting behavior</p></div></div>
+    <div class="report-notes">
+        <div><strong>Generated on demand</strong><span>Every file uses the latest records in the local SQLite database.</span></div>
+        <div><strong>Safe CSV values</strong><span>Text values are escaped to preserve commas and quotation marks.</span></div>
+        <div><strong>No cloud dependency</strong><span>Reports are produced directly by SmartIT Pro on your computer.</span></div>
+    </div>
+</section>

@@ -11,6 +11,7 @@ public interface IEmployeeRepository
     Task<Employee?> GetReadOnlyAsync(Guid id, CancellationToken cancellationToken);
     Task<bool> EmailExistsAsync(string email, Guid? excludingId, CancellationToken cancellationToken);
     Task<bool> DepartmentExistsAsync(Guid departmentId, CancellationToken cancellationToken);
+    Task<bool> HasAssignmentsAsync(Guid employeeId, CancellationToken cancellationToken);
     Task AddAsync(Employee employee, CancellationToken cancellationToken);
     void Remove(Employee employee);
 }
@@ -135,6 +136,8 @@ public sealed class DeleteEmployeeHandler(IEmployeeRepository repository, IUnitO
     {
         var employee = await repository.GetTrackedAsync(request.Id, cancellationToken);
         if (employee is null) return false;
+
+        if (await repository.HasAssignmentsAsync(request.Id, cancellationToken)) return false;
 
         repository.Remove(employee);
         await unitOfWork.SaveChangesAsync(cancellationToken);

@@ -1,0 +1,12 @@
+@{
+    var code = (int?)ViewBag.StatusCode ?? 404;
+    ViewData["Title"] = $"Error {code}";
+}
+<div class="error-page">
+    <div>
+        <div class="error-code">@code</div>
+        <h2>@(code == 404 ? "Page not found" : "Request unavailable")</h2>
+        <p class="text-body-secondary">The page may have been moved, removed or you may not have access.</p>
+        <a asp-controller="Home" asp-action="Index" class="button button-primary mt-3">Return to dashboard</a>
+    </div>
+</div>

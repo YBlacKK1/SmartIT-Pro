@@ -1,0 +1,51 @@
+@model TicketDto
+@{
+    ViewData["Title"] = "Ticket details";
+    string StatusClass(TicketStatus status) => status switch
+    {
+        TicketStatus.Open => "status-open",
+        TicketStatus.InProgress => "status-inprogress",
+        TicketStatus.Resolved => "status-resolved",
+        _ => "status-closed"
+    };
+    var priorityClass = $"priority-{Model.Priority.ToString().ToLowerInvariant()}";
+}
+<div class="page-header">
+    <div><h2>@Model.Subject</h2><p>@Model.Number · Created @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</p></div>
+    <div class="header-actions"><a asp-action="Index" class="button button-secondary">← Back to queue</a></div>
+</div>
+
+<div class="detail-grid">
+    <div>
+        <section class="panel">
+            <div class="panel-header">
+                <div><h3>Support request</h3><p>Submitted by @(Model.RequesterName ?? "an unspecified requester")</p></div>
+                <div class="d-flex gap-2"><span class="priority-badge @priorityClass">@Model.Priority</span><span class="status-badge @StatusClass(Model.Status)">@Model.Status</span></div>
+            </div>
+            <div class="panel-body">
+                <div class="ticket-description">@Model.Description</div>
+            </div>
+        </section>
+    </div>
+
+    <aside class="panel">
+        <div class="panel-header"><div><h3>Workflow</h3><p>Ticket ownership and status</p></div></div>
+        <div class="panel-body">
+            <div class="detail-list" style="grid-template-columns:1fr">
+                <div class="detail-item"><span>Ticket number</span><strong>@Model.Number</strong></div>
+                <div class="detail-item"><span>Requester</span><strong>@(Model.RequesterName ?? "Not assigned")</strong></div>
+                <div class="detail-item"><span>Current status</span><strong>@Model.Status</strong></div>
+            </div>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <form asp-action="UpdateStatus" method="post" class="mt-4">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <label class="form-label" for="status">Update status</label>
+                    <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<TicketStatus>()"></select>
+                    <button class="button button-primary w-100 mt-3" type="submit">Save workflow status</button>
+                </form>
+            }
+        </div>
+    </aside>
+</div>

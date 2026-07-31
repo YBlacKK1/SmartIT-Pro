@@ -1,2 +1,50 @@
 @model IEnumerable<AuditLog>
-<h1 class="h3">Audit log</h1><div class="card"><table class="table mb-0"><thead><tr><th>When</th><th>User</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead><tbody>@foreach(var x in Model){<tr><td>@x.CreatedAt.ToLocalTime()</td><td>@x.UserName</td><td>@x.Action</td><td>@x.EntityName</td><td>@x.Details</td></tr>}</tbody></table></div>
+@{
+    ViewData["Title"] = "Audit Log";
+    var items = Model.OrderByDescending(x => x.CreatedAt).ToArray();
+    var today = items.Count(x => x.CreatedAt.Date == DateTime.UtcNow.Date);
+    var users = items.Select(x => x.UserName).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+}
+
+<section class="page-heading">
+    <div>
+        <div class="eyebrow">SECURITY & COMPLIANCE</div>
+        <h2>Activity audit trail</h2>
+        <p>Review important changes made across assets, tickets and assignment workflows.</p>
+    </div>
+</section>
+
+<div class="metrics-grid compact-metrics">
+    <article class="metric-card"><div class="metric-top"><span class="metric-label">Total events</span><span class="metric-icon">≡</span></div><div class="metric-value">@items.Length</div><div class="metric-note">Recorded platform actions</div></article>
+    <article class="metric-card success"><div class="metric-top"><span class="metric-label">Today</span><span class="metric-icon">◷</span></div><div class="metric-value">@today</div><div class="metric-note">Events during the current day</div></article>
+    <article class="metric-card"><div class="metric-top"><span class="metric-label">Actors</span><span class="metric-icon">♙</span></div><div class="metric-value">@users</div><div class="metric-note">Unique users and services</div></article>
+</div>
+
+<section class="panel mt-4">
+    <div class="panel-header">
+        <div><h3>Recorded activity</h3><p>Newest events appear first</p></div>
+        <div class="search-box"><input type="search" placeholder="Search audit events..." data-table-search="#auditTable" /></div>
+    </div>
+    <div class="table-responsive">
+        <table class="app-table" id="auditTable">
+            <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Entity</th><th>Details</th><th>IP address</th></tr></thead>
+            <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td class="text-nowrap">@item.CreatedAt.ToLocalTime().ToString("dd MMM yyyy · HH:mm")</td>
+                    <td><strong>@item.UserName</strong></td>
+                    <td><span class="audit-action">@item.Action</span></td>
+                    <td>@item.EntityName</td>
+                    <td class="audit-details">@(item.Details ?? "—")</td>
+                    <td class="text-muted">@(item.IpAddress ?? "Local")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    @if (items.Length == 0)
+    {
+        <div class="empty-state"><strong>No audit activity</strong>New operational actions will appear here.</div>
+    }
+</section>

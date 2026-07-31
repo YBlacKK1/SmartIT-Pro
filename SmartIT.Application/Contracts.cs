@@ -1,4 +1,3 @@
-using AutoMapper;
 using FluentValidation;
 using SmartIT.Domain;
 
@@ -46,6 +45,7 @@ public sealed record TicketDto(
     TicketPriority Priority,
     TicketStatus Status,
     Guid? RequesterId,
+    string? RequesterName,
     DateTime CreatedAt);
 
 public sealed record DashboardDto(
@@ -53,38 +53,12 @@ public sealed record DashboardDto(
     int Assets,
     int OpenTickets,
     int AssignedAssets,
+    int AvailableAssets,
+    int CriticalTickets,
+    int ResolvedTickets,
     IReadOnlyCollection<TicketDto> RecentTickets,
-    IReadOnlyDictionary<string, int> AssetStatus);
-
-public sealed class MappingProfile : Profile
-{
-    public MappingProfile()
-    {
-        CreateMap<Employee, EmployeeDto>()
-            .ForCtorParam(nameof(EmployeeDto.DepartmentName), options =>
-                options.MapFrom(source => source.Department == null ? null : source.Department.Name));
-
-        CreateMap<EmployeeDto, Employee>()
-            .ForMember(destination => destination.Department, options => options.Ignore())
-            .ForMember(destination => destination.Assignments, options => options.Ignore())
-            .ForMember(destination => destination.CreatedAt, options => options.Ignore())
-            .ForMember(destination => destination.UpdatedAt, options => options.Ignore());
-
-        CreateMap<Asset, AssetDto>();
-        CreateMap<AssetDto, Asset>()
-            .ForMember(destination => destination.Assignments, options => options.Ignore())
-            .ForMember(destination => destination.CreatedAt, options => options.Ignore())
-            .ForMember(destination => destination.UpdatedAt, options => options.Ignore());
-
-        CreateMap<Ticket, TicketDto>();
-        CreateMap<TicketDto, Ticket>()
-            .ForMember(destination => destination.Requester, options => options.Ignore())
-            .ForMember(destination => destination.Comments, options => options.Ignore())
-            .ForMember(destination => destination.Attachments, options => options.Ignore())
-            .ForMember(destination => destination.CreatedAt, options => options.Ignore())
-            .ForMember(destination => destination.UpdatedAt, options => options.Ignore());
-    }
-}
+    IReadOnlyDictionary<string, int> AssetStatus,
+    IReadOnlyDictionary<string, int> TicketStatus);
 
 public sealed class EmployeeValidator : AbstractValidator<EmployeeDto>
 {

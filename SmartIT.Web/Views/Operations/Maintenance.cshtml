@@ -1,2 +1,66 @@
 @model IEnumerable<MaintenanceSchedule>
-<h1 class="h3">Maintenance schedule</h1><div class="card"><table class="table mb-0"><thead><tr><th>Description</th><th>Scheduled</th><th>Completed</th></tr></thead><tbody>@foreach(var x in Model){<tr><td>@x.Description</td><td>@x.ScheduledFor.ToLocalTime()</td><td>@x.Completed</td></tr>}</tbody></table></div>
+@{
+    ViewData["Title"] = "Maintenance";
+    var items = Model.OrderBy(x => x.ScheduledFor).ToArray();
+    var upcoming = items.Count(x => !x.Completed && x.ScheduledFor >= DateTime.UtcNow);
+    var overdue = items.Count(x => !x.Completed && x.ScheduledFor < DateTime.UtcNow);
+    var completed = items.Count(x => x.Completed);
+}
+
+<section class="page-heading">
+    <div>
+        <div class="eyebrow">ASSET OPERATIONS</div>
+        <h2>Maintenance schedule</h2>
+        <p>Keep infrastructure reliable by monitoring planned work and overdue maintenance.</p>
+    </div>
+</section>
+
+<div class="metrics-grid compact-metrics">
+    <article class="metric-card warning">
+        <div class="metric-top"><span class="metric-label">Upcoming</span><span class="metric-icon">⌁</span></div>
+        <div class="metric-value">@upcoming</div><div class="metric-note">Planned maintenance tasks</div>
+    </article>
+    <article class="metric-card danger">
+        <div class="metric-top"><span class="metric-label">Overdue</span><span class="metric-icon">!</span></div>
+        <div class="metric-value">@overdue</div><div class="metric-note">Tasks requiring attention</div>
+    </article>
+    <article class="metric-card success">
+        <div class="metric-top"><span class="metric-label">Completed</span><span class="metric-icon">✓</span></div>
+        <div class="metric-value">@completed</div><div class="metric-note">Finished maintenance tasks</div>
+    </article>
+</div>
+
+<section class="panel mt-4">
+    <div class="panel-header">
+        <div><h3>Maintenance calendar</h3><p>Scheduled operational work</p></div>
+        <div class="search-box"><input type="search" placeholder="Search maintenance..." data-table-search="#maintenanceTable" /></div>
+    </div>
+    <div class="table-responsive">
+        <table class="app-table" id="maintenanceTable">
+            <thead><tr><th>Asset</th><th>Work description</th><th>Scheduled</th><th>Status</th></tr></thead>
+            <tbody>
+            @foreach (var item in items)
+            {
+                var isOverdue = !item.Completed && item.ScheduledFor < DateTime.UtcNow;
+                <tr>
+                    <td><strong>@(item.Asset?.AssetTag ?? "—")</strong><small class="table-subtext">@(item.Asset?.Name ?? "Asset record")</small></td>
+                    <td>@item.Description</td>
+                    <td>@item.ScheduledFor.ToLocalTime().ToString("dd MMM yyyy · HH:mm")</td>
+                    <td>
+                        @if (item.Completed)
+                        { <span class="status-badge status-resolved">Completed</span> }
+                        else if (isOverdue)
+                        { <span class="priority-badge priority-critical">Overdue</span> }
+                        else
+                        { <span class="status-badge status-inprogress">Scheduled</span> }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    @if (items.Length == 0)
+    {
+        <div class="empty-state"><strong>No maintenance scheduled</strong>There are no maintenance records yet.</div>
+    }
+</section>

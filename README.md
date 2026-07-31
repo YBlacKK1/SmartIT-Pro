@@ -1,161 +1,80 @@
-# 🚀 SmartIT Pro
+# SmartIT Pro v1.0.1 — Foundation Update
 
-SmartIT Pro, kurumların bilgi teknolojileri süreçlerini tek bir platform üzerinden yönetebilmesi amacıyla geliştirilmiş modern bir **ASP.NET Core 8 MVC** uygulamasıdır.
+SmartIT Pro; çalışanları, BT varlıklarını, cihaz atamalarını ve destek taleplerini tek panelden yönetmek için geliştirilmiş ASP.NET Core tabanlı bir IT operasyon sistemidir.
 
-Proje; kullanıcı, personel, departman ve destek taleplerinin güvenli, hızlı ve düzenli bir şekilde yönetilmesini sağlayan ölçeklenebilir bir yönetim sistemidir.
+Bu sürüm, ilk SmartIT Pro projesinin yapısını ve temel iş akışlarını korur. Ayrı bir Swagger sitesi değildir. İlk projenin doğrudan devamı olan **v1.0 Foundation Update** sürümüdür.
 
----
+## Canlı uygulama
 
-## 🌐 Canlı Demo
+[SmartIT Pro'yu Azure üzerinde aç](https://smartitpro-web-26-cbb6dudma8h3g2ak.westeurope-01.azurewebsites.net/)
 
-🔗 https://smartitpro-web-26-cbb6dudma8h3g2ak.westeurope-01.azurewebsites.net/
+Canlı uygulamanın yönetici bilgileri kaynak kodda tutulmaz. Erişim bilgileri yalnızca Azure App Service ortam değişkenlerinden yönetilir.
 
----
+## Hızlı başlangıç
 
-## 📌 Proje Hakkında
+1. ZIP dosyasını tamamen klasöre çıkarın.
+2. Ana klasördeki `SMARTIT_SITEYI_AC.bat` dosyasına çift tıklayın.
+3. İlk çalıştırmada açılan güvenli kurulum ekranında yerel yönetici e-postanızı ve parolanızı belirleyin.
+4. NuGet paketlerinin indirilmesini bekleyin.
+5. Tarayıcı otomatik olarak `http://localhost:5101` adresini açar.
 
-SmartIT Pro, kurumsal IT operasyonlarını dijital ortama taşıyarak süreçlerin daha verimli yönetilmesini amaçlar. Modern yazılım geliştirme prensipleri kullanılarak geliştirilen proje; sürdürülebilir, güvenli ve kullanıcı dostu bir mimariye sahiptir.
+Yerel parola, .NET User Secrets alanında saklanır; `appsettings` dosyalarına veya Git deposuna yazılmaz.
 
----
+## v1.0 ile gelenler
 
-## ✨ Özellikler
+- İlk sürümün çalışan, varlık, atama ve ticket akışları korundu.
+- Baştan tasarlanmış responsive yönetim paneli eklendi.
+- Dark/light tema ve mobil yan menü eklendi.
+- KPI kartları ve Chart.js dashboard grafikleri eklendi.
+- Ticket detay ve durum yönetimi geliştirildi.
+- Varlık detay, QR kod, atama ve iade akışları birleştirildi.
+- Çalışan düzenlemede departman ve profil fotoğrafı güncellemesi eklendi.
+- Lisans, bakım ve audit log sayfaları yenilendi.
+- CSV, Excel ve PDF rapor merkezi eklendi.
+- SignalR ile gerçek zamanlı bildirim altyapısı eklendi.
+- SQLite ile sıfır kurulumlu yerel veritabanı oluşturuldu.
+- Güvenli cookie, giriş kilitleme, rol kontrolü ve form korumaları güçlendirildi.
+- API için JWT token endpoint'i geliştirici aracı olarak korundu.
 
-- 👤 Kullanıcı Yönetimi
-- 👨‍💼 Personel Yönetimi
-- 🏢 Departman Yönetimi
-- 🎫 Destek Talebi (Ticket) Sistemi
-- 📊 Yönetim Paneli (Dashboard)
-- 🔐 Giriş ve Yetkilendirme Sistemi
-- 📄 Raporlama Altyapısı
-- 📱 Responsive Tasarım
-- ⚡ Modern ve Kullanıcı Dostu Arayüz
+## Teknolojiler
 
----
+- .NET 8 / ASP.NET Core MVC
+- Entity Framework Core + SQLite
+- ASP.NET Core Identity
+- Clean Architecture katmanları
+- MediatR + FluentValidation
+- SignalR
+- ClosedXML, QuestPDF, QRCoder
+- Bootstrap 5 + özel SmartIT Pro tasarım sistemi
+- xUnit
 
-## 🛠️ Kullanılan Teknolojiler
-
-- ASP.NET Core 8
-- C#
-- Entity Framework Core
-- SQL Server
-- Bootstrap 5
-- HTML5
-- CSS3
-- JavaScript
-- Clean Architecture
-- AutoMapper
-- FluentValidation
-
----
-
-## 📂 Proje Yapısı
+## Proje yapısı
 
 ```text
-SmartIT-Pro
-│
-├── SmartIT.Web
-├── SmartIT.Application
-├── SmartIT.Domain
-├── SmartIT.Infrastructure
-├── SmartIT.Persistence
-└── SmartIT.Tests
+SmartIT.Domain          Temel entity ve enumlar
+SmartIT.Application     Use-case, DTO, doğrulama ve MediatR akışları
+SmartIT.Infrastructure  EF Core, Identity, repository ve demo veri kurulumu
+SmartIT.Web             Kullanıcıya gösterilen MVC paneli (port 5101)
+SmartIT.API             Geliştirici API'si ve Swagger (port 5201)
+SmartIT.Tests           Handler ve repository testleri
 ```
 
----
+## Yardımcı dosyalar
 
-## 📸 Ekran Görüntüleri
+- `SMARTIT_SITEYI_AC.bat`: Ana siteyi açmak için kullanacağınız dosyadır.
+- `START_SMARTIT.bat`: Web panelini restore, build ve run adımlarıyla hazırlar.
+- `SETUP_LOCAL_ADMIN.bat`: Yerel yönetici hesabını güvenli biçimde yapılandırır.
+- `VERIFY_PROJECT.bat`: Restore, Release build ve testleri çalıştırır.
+- `PUBLISH_AZURE.bat`: Release doğrulaması yapar ve mevcut Azure sitesine yüklenecek ZIP paketini hazırlar.
+- `CREATE_AZURE_ZIP.ps1`: Linux tabanlı Azure App Service ile uyumlu ZIP girişleri üretir.
+- `AZURE_UPDATE_GUIDE.md`: Canlı Azure Web App sürümünü güncelleme adımlarını açıklar.
+- `RESET_LOCAL_DATABASE.bat`: Yerel SQLite verisini silip temiz başlangıç sağlar.
+- `developer-tools/START_API.bat`: Yalnızca API/Swagger geliştirmesi için kullanılır.
 
-### 🔐 Giriş Ekranı
+Detaylı kurulum için `INSTALLATION.md`, değişiklikler için `CHANGELOG.md` dosyasına bakın.
 
-> Giriş ekranı görseli eklenecek.
+## Güvenlik notu
 
-### 📊 Dashboard
-
-> Dashboard ekran görüntüsü eklenecek.
-
-### 👨‍💼 Personel Yönetimi
-
-> Personel yönetimi ekran görüntüsü eklenecek.
-
-### 🎫 Destek Talepleri
-
-> Destek talepleri ekran görüntüsü eklenecek.
-
----
-
-## ⚙️ Kurulum
-
-Depoyu bilgisayarınıza klonlayın.
-
-```bash
-git clone https://github.com/YBlackK1/SmartIT-Pro.git
-```
-
-Proje klasörüne girin.
-
-```bash
-cd SmartIT-Pro
-```
-
-Gerekli paketleri yükleyin.
-
-```bash
-dotnet restore
-```
-
-Veritabanını oluşturun.
-
-```bash
-dotnet ef database update
-```
-
-Projeyi çalıştırın.
-
-```bash
-dotnet run
-```
-
----
-
-## 🎯 Yol Haritası
-
-- [x] Kullanıcı Yönetimi
-- [x] Personel Yönetimi
-- [x] Departman Yönetimi
-- [x] Destek Talebi Sistemi
-- [x] Dashboard
-- [ ] E-posta Bildirimleri
-- [ ] Docker Desteği
-- [ ] CI/CD Entegrasyonu
-- [ ] Birim Testleri
-
----
-
-## 🤝 Katkıda Bulunma
-
-Projeye katkıda bulunmak isterseniz depoyu forklayabilir, geliştirmelerinizi tamamladıktan sonra Pull Request gönderebilirsiniz.
-
----
-
-## 👨‍💻 Geliştirici
-
-**Yusuf Gürgen**
-
-🎓 İnternet ve Ağ Teknolojileri Öğrencisi
-
-### Bağlantılar
-
-🌐 **Canlı Demo**  
-https://smartitpro-web-26-cbb6dudma8h3g2ak.westeurope-01.azurewebsites.net/
-
-💻 **GitHub**  
-https://github.com/YBlackK1
-
-💼 **LinkedIn**  
-https://www.linkedin.com/in/yusufgurgen/
-
----
-
-## ⭐ Destek
-
-Projeyi beğendiyseniz GitHub üzerinden ⭐ vererek destek olabilirsiniz.
+- Parola, JWT anahtarı, Azure yayın profili ve veritabanı dosyaları GitHub'a eklenmez.
+- `*.PublishSettings`, `*.db`, `azure-publish/` ve üretilen Azure ZIP'i `.gitignore` kapsamındadır.
+- Azure dağıtımından sonra **SCM Basic Auth Publishing Credentials** ayarını kapatın.

@@ -1,2 +1,72 @@
 @model IEnumerable<SoftwareLicense>
-<h1 class="h3">Software licenses</h1><div class="card"><table class="table mb-0"><thead><tr><th>Product</th><th>Seats</th><th>Used</th><th>Expires</th></tr></thead><tbody>@foreach(var x in Model){<tr><td>@x.ProductName</td><td>@x.Seats</td><td>@x.UsedSeats</td><td>@x.ExpiresAt?.ToShortDateString()</td></tr>}</tbody></table></div>
+@{
+    ViewData["Title"] = "Software Licenses";
+    var items = Model.ToArray();
+    var totalSeats = items.Sum(x => x.Seats);
+    var usedSeats = items.Sum(x => x.UsedSeats);
+    var expiringSoon = items.Count(x => x.ExpiresAt.HasValue && x.ExpiresAt.Value <= DateTime.UtcNow.AddDays(90));
+}
+
+<section class="page-heading">
+    <div>
+        <div class="eyebrow">LICENSE MANAGEMENT</div>
+        <h2>Software subscriptions and seat usage</h2>
+        <p>Track assigned seats, utilization and upcoming renewal dates from a single workspace.</p>
+    </div>
+</section>
+
+<div class="metrics-grid compact-metrics">
+    <article class="metric-card">
+        <div class="metric-top"><span class="metric-label">Products</span><span class="metric-icon">◇</span></div>
+        <div class="metric-value">@items.Length</div>
+        <div class="metric-note">Managed software products</div>
+    </article>
+    <article class="metric-card success">
+        <div class="metric-top"><span class="metric-label">Seat utilization</span><span class="metric-icon">%</span></div>
+        <div class="metric-value">@(totalSeats == 0 ? 0 : Math.Round(usedSeats * 100d / totalSeats))%</div>
+        <div class="metric-note">@usedSeats of @totalSeats seats assigned</div>
+    </article>
+    <article class="metric-card warning">
+        <div class="metric-top"><span class="metric-label">Renewals</span><span class="metric-icon">↻</span></div>
+        <div class="metric-value">@expiringSoon</div>
+        <div class="metric-note">Expiring within 90 days</div>
+    </article>
+</div>
+
+<section class="panel mt-4">
+    <div class="panel-header">
+        <div>
+            <h3>License inventory</h3>
+            <p>Usage and renewal overview</p>
+        </div>
+        <div class="search-box"><input type="search" placeholder="Search licenses..." data-table-search="#licenseTable" /></div>
+    </div>
+    <div class="table-responsive">
+        <table class="app-table" id="licenseTable">
+            <thead><tr><th>Product</th><th>Usage</th><th>Seats</th><th>Renewal</th><th>Health</th></tr></thead>
+            <tbody>
+            @foreach (var item in items)
+            {
+                var utilization = item.Seats == 0 ? 0 : Math.Round(item.UsedSeats * 100d / item.Seats);
+                var daysLeft = item.ExpiresAt.HasValue ? (item.ExpiresAt.Value.Date - DateTime.UtcNow.Date).Days : (int?)null;
+                var healthClass = daysLeft is < 30 ? "priority-critical" : daysLeft is < 90 ? "priority-high" : "priority-low";
+                var healthLabel = daysLeft is null ? "No expiry" : daysLeft < 0 ? "Expired" : $"{daysLeft} days left";
+                <tr>
+                    <td><strong>@item.ProductName</strong><small class="table-subtext">License key protected</small></td>
+                    <td style="min-width:210px">
+                        <div class="usage-row"><span>@item.UsedSeats / @item.Seats</span><strong>@utilization%</strong></div>
+                        <div class="progress-track"><span style="width:@Math.Min(100, utilization)%"></span></div>
+                    </td>
+                    <td>@item.Seats</td>
+                    <td>@(item.ExpiresAt?.ToLocalTime().ToString("dd MMM yyyy") ?? "Perpetual")</td>
+                    <td><span class="priority-badge @healthClass">@healthLabel</span></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    @if (items.Length == 0)
+    {
+        <div class="empty-state"><strong>No licenses found</strong>Add software license records to begin tracking usage.</div>
+    }
+</section>
